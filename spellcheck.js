@@ -49,20 +49,19 @@ class Spellcheck {
         var edits = [];
         for (var i = 0; i < word.length + 1; i++) {
             if (i > 0)
-                edits.push(word.slice(0, i - 1) + word.slice(i, word.length)); // deletes
+                edits.push(word.slice(0, i - 1) + word.slice(i, word.length));
             if (i > 0 && i < word.length + 1)
-                edits.push(word.slice(0, i - 1) + word.slice(i, i + 1) + word.slice(i - 1, i) + word.slice(i + 1, word.length)); // transposes
+                edits.push(word.slice(0, i - 1) + word.slice(i, i + 1) + word.slice(i - 1, i) + word.slice(i + 1, word.length)); 
             for (var k = 0; k < alphabet.length; k++) {
                 if (i > 0)
-                    edits.push(word.slice(0, i - 1) + alphabet[k] + word.slice(i, word.length)); // replaces
-                edits.push(word.slice(0, i) + alphabet[k] + word.slice(i, word.length)); // inserts
+                    edits.push(word.slice(0, i - 1) + alphabet[k] + word.slice(i, word.length));
+                edits.push(word.slice(0, i) + alphabet[k] + word.slice(i, word.length)); 
             }
         }
-        // Deduplicate edits
+
         edits = edits.filter(function (v, i, a) { return a.indexOf(v) == i; });
         return edits;
     }
-    // Returns all edits that are up to "distance" edit distance away from the input word
     editsWithMaxDistance(word, distance) {
         return this.editsWithMaxDistanceHelper(distance, [[word]]);
     }
