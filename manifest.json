@@ -10,16 +10,19 @@
         "default_icon": {
           "20":"icons/2.png"
         },  
-    "default_popup": "plag.html"
+        "default_popup": "plag.html"
   },
     "content_scripts" : [
         {
             "matches" : ["<all_urls>"],
-            "js" : ["script.js"],
+            "js" : [ "az.js", "az.dawg.js", "az.morph.js", "az.tokens.js","trie.js","spellcheck.js","script2.js"],
             "run_at" : "document_end"
         }
     ],
     "web_accessible_resources": [
-      "src/*"
-    ]
+      "src/*",
+      "src/dicts/*"
+    ],
+
+    "content_security_policy":"script-src 'self'; object-src 'self'"
 }
