@@ -1,6 +1,6 @@
 {
     "manifest_version" : 2,
-    "name" : "My extension",
+    "name" : "ECPSfree",
     "version" : "1.0",
     "icons": {
         "48": "icons/2.png"
@@ -15,9 +15,20 @@
     "content_scripts" : [
         {
             "matches" : ["<all_urls>"],
-            "js" : [ "az.js", "az.dawg.js", "az.morph.js", "az.tokens.js","trie.js","spellcheck.js","script2.js"],
+            "js" : [
+                    "jquery.min.js",
+                    "jquery.xdomainajax.js",
+                    "trie.js",
+                    "spellcheck.js",
+                    "dictionary.js",
+                    "index.js",
+                    "load.js",
+                    "checktypos.js",
+                    "appraiser.js"
+                  ],
             "run_at" : "document_end"
         }
+        
     ],
     "web_accessible_resources": [
       "src/*",

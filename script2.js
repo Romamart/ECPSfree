@@ -142,7 +142,7 @@ let end = function(res_url,count_en,count_ru){
     }else if (res_url){
         alert('Сайт корректен!');
     }else{
-        alertц(`Сайт имеет похожий URL, Количество ошибок: ${count_ru+count_en}`)
+        alert(`Сайт имеет похожий URL, Количество ошибок: ${count_ru+count_en}`)
     }
 }
 
