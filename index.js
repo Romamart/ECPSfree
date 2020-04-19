@@ -29,6 +29,7 @@ class Spellchecker {
     check(aWord) {
         // Remove leading and trailing whitespace
         var trimmedWord = aWord.replace(/^\s\s*/, '').replace(/\s\s*$/, '');
+
         if (this.checkExact(trimmedWord)) {
             return true;
         }
@@ -45,6 +46,7 @@ class Spellchecker {
                 return true;
             }
         }
+
         var lowercaseWord = trimmedWord.toLowerCase();
         if (lowercaseWord !== trimmedWord) {
             if (this.hasFlag(lowercaseWord, "KEEPCASE")) {
@@ -66,6 +68,9 @@ class Spellchecker {
      */
     checkExact(word) {
         var ruleCodes = this.dict.dictionaryTable[word];
+        // if (typeof ruleCodes !== 'undefined') {
+        //     console.log(ruleCodes);
+        // }
         if (typeof ruleCodes === 'undefined') {
             // Check if this might be a compound word.
             if ("COMPOUNDMIN" in this.dict.flags && word.length >= this.dict.flags.COMPOUNDMIN) {
@@ -130,7 +135,18 @@ class Spellchecker {
             }
         }
         var self = this;
-        self.dict.alphabet = "abcdefghijklmnopqrstuvwxyz";
+        var tmp = self.dict.flags["TRY"].toLowerCase();
+        // console.log(tmp);
+        var alph = '';
+        for (let char of tmp){
+            if (alph.search(char) == -1){
+                alph += char;
+            }
+        }
+        
+        // console.log(alph);
+        // self.dict.alphabet = "abcdefghijklmnopqrstuvwxyz";
+        self.dict.alphabet = alph;
         /*
         if (!self.alphabet) {
             // Use the alphabet as implicitly defined by the words in the dictionary.
@@ -159,13 +175,13 @@ class Spellchecker {
                 for (var i = 0, _len = word.length + 1; i < _len; i++) {
                     splits.push([word.substring(0, i), word.substring(i, word.length)]);
                 }
-                var deletes = [];
-                for (var i = 0, _len = splits.length; i < _len; i++) {
-                    var s = splits[i];
-                    if (s[1]) {
-                        deletes.push(s[0] + s[1].substring(1));
-                    }
-                }
+                // var deletes = [];
+                // for (var i = 0, _len = splits.length; i < _len; i++) {
+                //     var s = splits[i];
+                //     if (s[1]) {
+                //         deletes.push(s[0] + s[1].substring(1));
+                //     }
+                // }
                 var transposes = [];
                 for (var i = 0, _len = splits.length; i < _len; i++) {
                     var s = splits[i];
@@ -191,18 +207,20 @@ class Spellchecker {
                         }
                     }
                 }
-                rv = rv.concat(deletes);
+                // rv = rv.concat(deletes);
                 rv = rv.concat(transposes);
                 rv = rv.concat(replaces);
                 rv = rv.concat(inserts);
             }
             return rv;
         }
-        function known(words) {
+        function known(words, word) {
             var rv = [];
             for (var i = 0; i < words.length; i++) {
-                if (self.check(words[i])) {
-                    rv.push(words[i]);
+                if (word.length == words[i].length){
+                    if (self.check(words[i])) {
+                        rv.push(words[i]);
+                    }
                 }
             }
             return rv;
@@ -210,22 +228,29 @@ class Spellchecker {
         function correct(word) {
             // Get the edit-distance-1 and edit-distance-2 forms of this word.
             var ed1 = edits1([word]);
-            var ed2 = edits1(ed1);
-            var corrections = known(ed1).concat(known(ed2));
+            // var ed2 = edits1(ed1);
+            // var corrections = known(ed1, word).concat(known(ed2,word));
+            var corrections = known(ed1, word);
+            console.log(corrections);
             // Sort the edits based on how many different ways they were created.
             var weighted_corrections = {};
+            var sum_all = 0;
             for (var i = 0, _len = corrections.length; i < _len; i++) {
                 if (!(corrections[i] in weighted_corrections)) {
                     weighted_corrections[corrections[i]] = 1;
+                    sum_all++;
                 }
                 else {
                     weighted_corrections[corrections[i]] += 1;
+                    sum_all++;
                 }
             }
             var sorted_corrections = [];
             for (var i in weighted_corrections) {
-                sorted_corrections.push([i, weighted_corrections[i]]);
+                sorted_corrections.push([i, weighted_corrections[i]/sum_all]);
             }
+
+
             function sorter(a, b) {
                 if (a[1] < b[1]) {
                     return -1;
@@ -233,10 +258,11 @@ class Spellchecker {
                 return 1;
             }
             sorted_corrections.sort(sorter).reverse();
-            var rv = [];
+            var rv = {};
             for (var i = 0, _len = Math.min(limit, sorted_corrections.length); i < _len; i++) {
                 if (!self.hasFlag(sorted_corrections[i][0], "NOSUGGEST")) {
-                    rv.push(sorted_corrections[i][0]);
+                    // rv.push(sorted_corrections[i][0]);
+                    rv[sorted_corrections[i][0]] = sorted_corrections[i][1];
                 }
             }
             return rv;

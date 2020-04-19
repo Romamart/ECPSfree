@@ -47,48 +47,53 @@ function checktypos(lang,words_array){
                 }
             }
             for (let word of words_array){
-                if (lang == 'ru'){
-                    word = word.replace('ё', 'е');
-                }
-                if (!spellchecker.check(word)){
-                    if (word.length > 4){
-                        check_pairs: for (let ch = 0; ch < word.length-1; ch++){
-                            for(let i = 0; i < pair_alph.length; i++){
-                                let check_word;
-                                if(ch == 0){
-                                    check_word = pair_alph[i] + word.slice(2,word.length+1);
-                                    if (spellchecker.check(check_word)){
-                                        count++;
-                                        console.log(word);
-                                        break check_pairs;
-                                    }
-                                }else if (ch == word.length-2){
-                                    check_word = word.slice(0, -2) + pair_alph[i];
-                                    if (spellchecker.check(check_word)){
-                                        count++;
-                                        console.log(word);
-                                        break check_pairs;
-                                    }
-                                }else{
-                                    check_word = word.slice(0,ch) + pair_alph[i] + word.slice(ch+2);
-                                    if (spellchecker.check(check_word)){
-                                        count++;
-                                        console.log(word);
-                                        break check_pairs;
-                                    }
-                                }
-                            }
-                        }   
-                    }
-                    // console.log(spellchecker.suggest(word));
-                    // if (spellchecker.suggest(word,3).length != 0){
-                    //     count++;
-                    //     console.log(word);
-                    //     check_list.push({word : spellchecker.suggest(word,3)})
+                // if (lang == 'ru'){
+                //     word = word.replace('ё', 'е');
+                // }
+                let isRight = spellchecker.check(word);
+                // if (!spellchecker.check(word)){
+                //     if (word.length > 4){
+                //         check_pairs: for (let ch = 0; ch < word.length-1; ch++){
+                //             for(let i = 0; i < pair_alph.length; i++){
+                //                 let check_word;
+                //                 if(ch == 0){
+                //                     check_word = pair_alph[i] + word.slice(2,word.length+1);
+                //                     if (spellchecker.check(check_word)){
+                //                         count++;
+                //                         console.log(word);
+                //                         break check_pairs;
+                //                     }
+                //                 }else if (ch == word.length-2){
+                //                     check_word = word.slice(0, -2) + pair_alph[i];
+                //                     if (spellchecker.check(check_word)){
+                //                         count++;
+                //                         console.log(word);
+                //                         break check_pairs;
+                //                     }
+                //                 }else{
+                //                     check_word = word.slice(0,ch) + pair_alph[i] + word.slice(ch+2);
+                //                     if (spellchecker.check(check_word)){
+                //                         count++;
+                //                         console.log(word);
+                //                         break check_pairs;
+                //                     }
+                //                 }
+                //             }
+                //         }   
+                //     }
+                //     // console.log(spellchecker.suggest(word));
+                //     // if (spellchecker.suggest(word,3).length != 0){
+                //     //     count++;
+                //     //     console.log(word);
+                //     //     check_list.push({word : spellchecker.suggest(word,3)})
 
-                    // }
-                }
+                //     // }
+                // }
             }
+            // console.log(DICT.dictionaryTable['привет']);
+            // console.log(DICT.dictionaryTable[words_array[0]]);
+            // console.log(DICT.flags);
+            console.log(spellchecker.suggest('сорокт',1));
             delete spellchecker;
             delete DICT;
             return count;

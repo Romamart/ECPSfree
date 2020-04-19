@@ -6,19 +6,55 @@ window.browser = (function () {
 
 
 
-let check_url = new Promise(function(resalt,rej){
-    let bounds = [[4, 6],[7, 9],[10, 12],[13, 15],
-                [16, 18],[19, 21],[22, 24],[25, 27],
-                [28, 30],[31, 33],[34, 36],[37, 39],
-                [40, 42],[43, 45],[46, 48],[49, 51],
-                [52, 54],[55, 58],[59, 63],[64, 73]]
+let check_url = new Promise(function(result,rej){
+    let bounds = [
+                    [1, 3], [4, 6], [7, 9], [10, 12],
+                    [13, 15], [16, 18], [19, 21], [22, 24],
+                    [25, 27], [28, 30], [31, 33], [34, 36],
+                    [37, 39], [40, 42], [43, 49], [50, 62]
+                 ];
 
     let mask = 'src/json/len_';
 
     let win_url = window.location.host;
-    if (win_url.search('www.') != -1 && win_url.search('www.') == 0){
-        win_url = win_url.slice(win_url.search('www.')+4);
+    let mas = win_url.split('.');
+    let dom = '';
+    if (mas.length != 1){
+        if (mas[0] == 'www'){
+            if (mas.length != 2){
+                for(let i = 1; i < mas.length -1; i++){
+                    if (i == mas.length - 2){
+                        dom += mas[i];
+                    }else{
+                        dom += mas[i] + '.';
+                    }
+                }
+            }else{
+                for(let i = 0; i < mas.length -1; i++){
+                    if (i == mas.length - 2){
+                        dom += mas[i];
+                    }else{
+                        dom += mas[i] + '.';
+                    }
+                }
+            }
+        }else{
+            for(let i = 0; i < mas.length -1; i++){
+                if (i == mas.length - 2){
+                    dom += mas[i];
+                }else{
+                    dom += mas[i] + '.';
+                }
+            }
+        }
+    }else{
+        dom += mas[0];
     }
+
+    // if (win_url.search('www.') != -1 && win_url.search('www.') == 0){
+    //     win_url = win_url.slice(win_url.search('www.')+4);
+    // }
+    win_url = dom;
 
     for(let x = 0; x < bounds.length; x++){
         if (win_url.length >= bounds[x][0] && win_url.length <= bounds[x][1]){
@@ -33,41 +69,41 @@ let check_url = new Promise(function(resalt,rej){
         // console.log(typeof(urls));
         let spellcheck = new Spellcheck(urls);
         var res = spellcheck.getCorrections(win_url, 1);
-        resalt(res);
+        result(res);
     }, 'json');
 });
 
 
-let check_domain = new Promise(function(resalt, rej){
+let check_domain = new Promise(function(result, rej){
     let url = window.browser.extension.getURL("src/json/dom_up.json");
 
     load(url,function(err,dom_up){
         let up = '.' + document.domain.split('.').pop();
         if (typeof dom_up[up] !== "undefined") {
             // console.log("yes");
-            resalt(dom_up[up]);
+            result(dom_up[up]);
         }else{
             
-            resalt(false);
+            result(false);
         }
         // console.log(dom_up[up]);
     },"json");
 });
 
-let check_protocol = new Promise(function(resalt, rej){
+let check_protocol = new Promise(function(result, rej){
     let protocol_value = true;
 
     if (window.location.protocol == 'http:'){
         protocol_value = false;
     }
 
-    resalt(protocol_value);
+    result(protocol_value);
 });
 
-let check_links = new Promise(function(resalt,rej){
+let check_links = new Promise(function(result,rej){
     let elems = document.getElementsByTagName('a');
     let count = 0;
-    console.log(elems);
+    // console.log(elems);
     for (let elem of elems){
         let b = elem.attributes;
         // console.log(typeof(b['href'])) ; 
@@ -77,44 +113,55 @@ let check_links = new Promise(function(resalt,rej){
                 if ((typeof b['style'] === 'undefined') || (typeof b['class'] === 'undefined')){
                     if (elem.href == window.location.href + '#'){
                         count++;
-                        console.log(elem);
+                        // console.log(elem);
                     }
                 }
             }
         }
     }
 
-    resalt(count);
+    result(count);
 });
 
-let check_body = new Promise(function(resalt,rej){
+let check_body = new Promise(function(result,rej){
     let flag = true;
     let body = document.getElementsByTagName('body');
-    flag = body[0].matches('body[background$="png"')||body[0].matches('body[background$="jpg"');
-    resalt(!flag);
+    flag = body[0].matches('body[background$="png"')||body[0].matches('body[background$="jpg"')||body[0].style['backgroundImage'] != '';
+    result(!flag);
 });
 
-let get_text = new Promise(function(resalt, rej){
+let get_text = new Promise(function(result, rej){
     let page_text = (document.body.innerText) ? document.body.innerText : document.body.textContent;
     // console.log(page_text);
-    page_text = page_text.replace(/([\w/]+\.){2,6}\w+/g, '');
-    page_text = page_text.replace(/\d/g,'');
+    page_text = page_text.replace(/([а-я\w/]+\.){2,6}\w+/g, '');
+    page_text = page_text.replace(/http|https/g, '');
+    page_text = page_text.replace(/[\d_]/g,'');
     
 
-    let arr = page_text.match(/\w+/g);
-    // console.log(arr);
-    let final_arr = [];
-    if (arr){
-        for (let word of arr){
-            if (final_arr.indexOf(word) == -1){
+    let arr_en = page_text.match(/\w+/g);
+    let final_arr_en = [];
+    if (arr_en){
+        for (let word of arr_en){
+            if (final_arr_en.indexOf(word) == -1){
                 if (word[0] == word[0].toLocaleLowerCase())
-                    final_arr.push(word)
+                    final_arr_en.push(word)
             }
         }
     }
-    resalt(final_arr);
+    let arr_ru = page_text.match(/[а-яА-Я]+/g);
+    // console.log(arr_ru);
+    let final_arr_ru = [];
+    if (arr_ru){
+        for (let word of arr_ru){
+            if (final_arr_ru.indexOf(word) == -1){
+                if (word[0] == word[0].toLocaleLowerCase())
+                    final_arr_ru.push(word)
+            }
+        }
+    }
+    result([final_arr_en, final_arr_ru]);
 });
-let check_form = new Promise(function(resalt, rej){
+let check_form = new Promise(function(result, rej){
     let form = document.getElementsByTagName('form');
     let flag = true; 
     if (form.length != 0){
@@ -126,10 +173,10 @@ let check_form = new Promise(function(resalt, rej){
             }
         }
     }
-    resalt(flag);
+    result(flag);
 });
 
-let check_other_links = new Promise(function(resalt, rej){
+let check_other_links = new Promise(function(result, rej){
     let count_pos = 0;
     let count_neg = 0;
     let elems = document.getElementsByTagName('a');
@@ -161,13 +208,39 @@ let check_other_links = new Promise(function(resalt, rej){
         }
     }
     if (count_neg != 0){
-        resalt(count_pos/count_neg);
+        result(count_pos/count_neg);
     }else if (count_pos != 0){
-        resalt(count_pos);
+        result(count_pos);
     }else{
-        resalt(-1);
+        result(-1);
     }
 })
+
+let check_links_head = new Promise(function(result, rej){
+    let links = document.getElementsByTagName('link');
+    let count_links_pos = 0;
+    let count_links_neg = 0;
+    let rule = /https:\/\/([а-я\w\-]+\.){1,6}\w+|http:\/\/([а-я\w\-]+\.){1,6}\w+/g;
+    if (links.length != 0){
+        let url = window.location.href.match(rule)[0];
+        for (let link of links){
+            let tmp = link.href.match(rule)[0];
+            if (url == tmp){
+                count_links_pos++;
+            }else{
+                count_links_neg++;
+            }
+        }
+    }
+    if (count_links_neg != 0){
+        result(count_links_pos/count_links_neg);
+    }else if (count_links_pos != 0){
+        result(count_links_pos);
+    }else{
+        result(-1);
+    }
+    // result(count_links);
+});
 
 let job_new = async function(){
 
@@ -176,27 +249,29 @@ let job_new = async function(){
     let res_protocol = await check_protocol;
     let res_links = await check_links;
     let res_body = await check_body;
-    let count_en = await checktypos('en', await get_text);
+    let mas_words = await get_text;
+    let count_en = 0;
+    let count_ru = 0;
+    // if (mas_words[0]){
+    //     count_en = await checktypos('en', mas_words[0]);
+    // }
+    // if (mas_words[1]){
+    //     count_ru = await checktypos('index', mas_words[1]);
+    // }
+    count_ru = await checktypos('index', ['браузера']);
+    let count = count_en + count_ru; 
     let res_form = await check_form;
     let res_other_links = await check_other_links;
-    // window.onerror = function(message, source, lineno, colno, error) { 
-    //     count_err++;
-    // // console.log(co)
-    // }
-    // console.log();
+    let res_links_head = await check_links_head;
+
+    // console.log(mas_words);
     let str = '';
-    let last_arr = [res_domain, res_url, res_protocol, res_links, res_body, count_en, res_form, res_other_links];
+    let last_arr = [res_domain, res_url, res_protocol, res_links, res_body, count, res_form, res_other_links, res_links_head];
     console.log(last_arr);
-    str+=window.location.href;
+    str += window.location.href;
     for(let ar of last_arr){
         str+= '\t' + ar;
     }
-    // var a = document.createElement('a');
-    // a.innerText = 'text.txt';
-    // a.href = `data:text/plain;charset=utf-8,%EF%BB%BF' + ${encodeURIComponent(str)}`;
-    // a.download = 'text.txt';
-    // // let body = document.getElementsByTagName('body');
-    // document.body.prepend(a);
     
     var value = prompt("phishing?",'');
     console.log(value);
