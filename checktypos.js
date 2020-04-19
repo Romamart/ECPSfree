@@ -34,23 +34,29 @@ function checktypos(lang,words_array){
                     dic: dict_dic
                 });
             spellchecker.use(DICT);
-            let alph = DICT.flags['TRY'];
-            let pair_alph = [];
-            for (let i = 0; i < alph.length; i++){
-                for (let j = i; j < alph.length; j++){
-                    if (j != i){
-                        pair_alph.push(alph[i]+alph[j]);
-                        pair_alph.push(alph[j]+alph[i]);
-                    }else{
-                        pair_alph.push(alph[i]+alph[j]);
-                    }
-                }
-            }
+            // let alph = DICT.flags['TRY'];
+            // let pair_alph = [];
+            // for (let i = 0; i < alph.length; i++){
+            //     for (let j = i; j < alph.length; j++){
+            //         if (j != i){
+            //             pair_alph.push(alph[i]+alph[j]);
+            //             pair_alph.push(alph[j]+alph[i]);
+            //         }else{
+            //             pair_alph.push(alph[i]+alph[j]);
+            //         }
+            //     }
+            // }
             for (let word of words_array){
                 // if (lang == 'ru'){
                 //     word = word.replace('ё', 'е');
                 // }
-                let isRight = spellchecker.check(word);
+                if (word.length > 5){
+                    if (!spellchecker.check(word)){
+                        if (spellchecker.suggest(word).length != 0){
+                            count++;
+                        }
+                    }
+                }
                 // if (!spellchecker.check(word)){
                 //     if (word.length > 4){
                 //         check_pairs: for (let ch = 0; ch < word.length-1; ch++){
@@ -93,7 +99,7 @@ function checktypos(lang,words_array){
             // console.log(DICT.dictionaryTable['привет']);
             // console.log(DICT.dictionaryTable[words_array[0]]);
             // console.log(DICT.flags);
-            console.log(spellchecker.suggest('сорокт',1));
+            // console.log(spellchecker.suggest('сорокт',1));
             delete spellchecker;
             delete DICT;
             return count;

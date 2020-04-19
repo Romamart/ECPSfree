@@ -231,7 +231,7 @@ class Spellchecker {
             // var ed2 = edits1(ed1);
             // var corrections = known(ed1, word).concat(known(ed2,word));
             var corrections = known(ed1, word);
-            console.log(corrections);
+            // console.log(corrections);
             // Sort the edits based on how many different ways they were created.
             var weighted_corrections = {};
             var sum_all = 0;
@@ -258,13 +258,15 @@ class Spellchecker {
                 return 1;
             }
             sorted_corrections.sort(sorter).reverse();
-            var rv = {};
+            var rv = [];
             for (var i = 0, _len = Math.min(limit, sorted_corrections.length); i < _len; i++) {
                 if (!self.hasFlag(sorted_corrections[i][0], "NOSUGGEST")) {
-                    // rv.push(sorted_corrections[i][0]);
-                    rv[sorted_corrections[i][0]] = sorted_corrections[i][1];
+                    rv.push(sorted_corrections[i][0]);
+                    // rv[sorted_corrections[i][0]] = sorted_corrections[i][1];
                 }
             }
+            // console.log(word);
+            // console.log(rv);
             return rv;
         }
         return correct(word);

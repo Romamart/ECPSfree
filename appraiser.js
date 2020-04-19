@@ -252,13 +252,13 @@ let job_new = async function(){
     let mas_words = await get_text;
     let count_en = 0;
     let count_ru = 0;
-    // if (mas_words[0]){
-    //     count_en = await checktypos('en', mas_words[0]);
-    // }
-    // if (mas_words[1]){
-    //     count_ru = await checktypos('index', mas_words[1]);
-    // }
-    count_ru = await checktypos('index', ['браузера']);
+    if (mas_words[0]){
+        count_en = await checktypos('en', mas_words[0]);
+    }
+    if (mas_words[1]){
+        count_ru = await checktypos('ru', mas_words[1]);
+    }
+    // count_ru = await checktypos('index', ['браузера']);
     let count = count_en + count_ru; 
     let res_form = await check_form;
     let res_other_links = await check_other_links;
