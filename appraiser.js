@@ -1,3 +1,4 @@
+
 window.browser = (function () {
     return window.msBrowser ||
         window.browser ||
@@ -67,8 +68,14 @@ let check_url = new Promise(function(result,rej){
 
     load(web_url, function(err, urls){
         // console.log(typeof(urls));
-        let spellcheck = new Spellcheck(urls);
-        var res = spellcheck.getCorrections(win_url, 1);
+        // let spellcheck = new Spellcheck(urls);
+        // var res = spellcheck.getCorrections(win_url, 1)
+        var res;
+        if (urls.indexOf(win_url) != -1){
+            res = 1;
+        }else{
+            res = 0;
+        }
         result(res);
     }, 'json');
 });
@@ -81,10 +88,14 @@ let check_domain = new Promise(function(result, rej){
         let up = '.' + document.domain.split('.').pop();
         if (typeof dom_up[up] !== "undefined") {
             // console.log("yes");
-            result(dom_up[up]);
+            if (dom_up[up]){
+                result(1);
+            }else{
+                result(-1);
+            }
         }else{
             
-            result(false);
+            result(0);
         }
         // console.log(dom_up[up]);
     },"json");
@@ -96,8 +107,11 @@ let check_protocol = new Promise(function(result, rej){
     if (window.location.protocol == 'http:'){
         protocol_value = false;
     }
-
-    result(protocol_value);
+    if (protocol_value){
+        result(1);
+    }else{
+        result(-1)
+    }
 });
 
 let check_links = new Promise(function(result,rej){
@@ -127,7 +141,11 @@ let check_body = new Promise(function(result,rej){
     let flag = true;
     let body = document.getElementsByTagName('body');
     flag = body[0].matches('body[background$="png"')||body[0].matches('body[background$="jpg"')||body[0].style['backgroundImage'] != '';
-    result(!flag);
+    if (!flag){
+        result(1);
+    }else{
+        result(-1);
+    }
 });
 
 let get_text = new Promise(function(result, rej){
@@ -166,14 +184,25 @@ let check_form = new Promise(function(result, rej){
     let flag = true; 
     if (form.length != 0){
         let pieces = document.domain.split('.');
-        for (let i=0; i < pieces.length-1; i++){
-            // console.log(typeof form[0].action);
-            if (form[0].action.match(/([\w/]+\.){1,6}\w+/g)[0].search(pieces[i]) == -1){
-                flag = false;
+        for (let j = 0; j < form.length; j++){
+            for (let i=0; i < pieces.length-1; i++){
+                // console.log(typeof form[0].action);
+                if (typeof form[j].action == 'string'){
+                    if (form[j].action.match(/([\w/]+\.){1,6}\w+/g) != null){
+                        if (form[j].action.match(/([\w/]+\.){1,6}\w+/g)[0].search(pieces[i]) == -1){
+                            flag = false;
+                    
+                        }
+                    }
+                }
             }
         }
     }
-    result(flag);
+    if (flag){
+        result(1);
+    }else{
+        result(-1)
+    }
 });
 
 let check_other_links = new Promise(function(result, rej){
@@ -183,24 +212,25 @@ let check_other_links = new Promise(function(result, rej){
     let pieces = document.domain.split('.');
     if (elems.length != 0){
         for (let elem of elems){
-            
-            if (elem.href != '' && elem.href != window.location.href + '#'){
-                if (elem.href.length >= 5 && elem.href.slice(0,5) == 'http:'){
-                    count_neg++;
-                }else if (elem.href.match(/([\w/]+\.){1,6}\w+/g) != null){
-                    if (elem.href.match(/([\w/]+\.){1,6}\w+/g)[0].search(document.domain) != -1){
-                        count_pos++;
-                    }else{
-                        let flag = true;
-                        for (let i=0; i < pieces.length-1; i++){
-                            if (elem.href.match(/([\w/]+\.){1,6}\w+/g)[0].search(pieces[i]) == -1){
-                                flag = false;
-                            }
-                        }
-                        if (flag){
+            if (typeof elem.href == 'string'){
+                if (elem.href != '' && elem.href != window.location.href + '#'){
+                    if (elem.href.length >= 5 && elem.href.slice(0,5) == 'http:'){
+                        count_neg++;
+                    }else if (elem.href.match(/([\w/]+\.){1,6}\w+/g) != null){
+                        if (elem.href.match(/([\w/]+\.){1,6}\w+/g)[0].search(document.domain) != -1){
                             count_pos++;
                         }else{
-                            count_neg++;
+                            let flag = true;
+                            for (let i=0; i < pieces.length-1; i++){
+                                if (elem.href.match(/([\w/]+\.){1,6}\w+/g)[0].search(pieces[i]) == -1){
+                                    flag = false;
+                                }
+                            }
+                            if (flag){
+                                count_pos++;
+                            }else{
+                                count_neg++;
+                            }
                         }
                     }
                 }
@@ -224,11 +254,13 @@ let check_links_head = new Promise(function(result, rej){
     if (links.length != 0){
         let url = window.location.href.match(rule)[0];
         for (let link of links){
-            let tmp = link.href.match(rule)[0];
-            if (url == tmp){
-                count_links_pos++;
-            }else{
-                count_links_neg++;
+            if (link.href.match(rule)!= null){
+                let tmp = link.href.match(rule)[0];
+                if (url == tmp){
+                    count_links_pos++;
+                }else{
+                    count_links_neg++;
+                }
             }
         }
     }
@@ -259,31 +291,47 @@ let job_new = async function(){
         count_ru = await checktypos('ru', mas_words[1]);
     }
     // count_ru = await checktypos('index', ['браузера']);
-    let count = count_en + count_ru; 
+
+    let count = ((mas_words[0].length + mas_words[1].length) != 0)?(count_en + count_ru)/(mas_words[0].length + mas_words[1].length):-1; 
     let res_form = await check_form;
     let res_other_links = await check_other_links;
     let res_links_head = await check_links_head;
 
     // console.log(mas_words);
     let str = '';
-    let last_arr = [res_domain, res_url, res_protocol, res_links, res_body, count, res_form, res_other_links, res_links_head];
+    let last_arr = [res_domain, res_url, res_protocol, res_links, res_body, count, res_form, res_other_links, res_links_head, count_en + count_ru, mas_words[0].length + mas_words[1].length];
     console.log(last_arr);
-    str += window.location.href;
-    for(let ar of last_arr){
-        str+= '\t' + ar;
-    }
-    
-    var value = prompt("phishing?",'');
-    console.log(value);
-    if (value){
-        str+= '\t' + value;
-
-        if (confirm("Скачиваем?")){
-            document.write(
-                '<a href="data:text/plain;charset=utf-8,%EF%BB%BF' + encodeURIComponent(str) + `" download="text${+new Date()}.txt">text.txt</a>`
-            )
+    var model = new NeuralNetwork();
+    let li = window.browser.extension.getURL('src/model/model.json');
+    load(li, function(err, mod){
+        model.fromJSON(mod);
+        if (model.run(last_arr) > 0.5){
+            alert('Скорее всего сайт фишинговый')
         }
-    }
+    }, 'json');
+    // str += window.location.href;
+    // for(let ar of last_arr){
+    //     str+= '\t' + ar;
+    // }
+
+    
+    // var value = prompt("phishing?",1);
+    // console.log(value);
+    // if (value){
+    //     str+= '\t' + value;
+
+    //     if (confirm("Скачиваем?")){
+    //         document.write(
+    //             '<a href="data:text/plain;charset=utf-8,%EF%BB%BF' + encodeURIComponent(str) + `" download="text${+new Date()}.txt"><button type="button" id='pw'>Download</button></a>`
+    //         )
+    //     }
+    //     $(document).keypress(function (e) {
+    //         if (e.which == 13) {
+    //                 document.getElementById("pw").click();
+    //         }
+    //     });
+    // }
+
 };
 
 job_new();

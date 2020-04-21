@@ -53,6 +53,8 @@ function checktypos(lang,words_array){
                 if (word.length > 5){
                     if (!spellchecker.check(word)){
                         if (spellchecker.suggest(word).length != 0){
+                            // console.log(word),
+                            // console.log(spellchecker.suggest(word));
                             count++;
                         }
                     }

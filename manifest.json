@@ -16,10 +16,7 @@
         {
             "matches" : ["<all_urls>"],
             "js" : [
-                    "jquery.min.js",
-                    "jquery.xdomainajax.js",
-                    "trie.js",
-                    "spellcheck.js",
+                    "my_brain.js",
                     "dictionary.js",
                     "index.js",
                     "load.js",
