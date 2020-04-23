@@ -52,9 +52,6 @@ let check_url = new Promise(function(result,rej){
         dom += mas[0];
     }
 
-    // if (win_url.search('www.') != -1 && win_url.search('www.') == 0){
-    //     win_url = win_url.slice(win_url.search('www.')+4);
-    // }
     win_url = dom;
 
     for(let x = 0; x < bounds.length; x++){
@@ -67,9 +64,6 @@ let check_url = new Promise(function(result,rej){
     let web_url = window.browser.extension.getURL(mask);
 
     load(web_url, function(err, urls){
-        // console.log(typeof(urls));
-        // let spellcheck = new Spellcheck(urls);
-        // var res = spellcheck.getCorrections(win_url, 1)
         var res;
         if (urls.indexOf(win_url) != -1){
             res = 1;
@@ -87,7 +81,6 @@ let check_domain = new Promise(function(result, rej){
     load(url,function(err,dom_up){
         let up = '.' + document.domain.split('.').pop();
         if (typeof dom_up[up] !== "undefined") {
-            // console.log("yes");
             if (dom_up[up]){
                 result(1);
             }else{
@@ -97,7 +90,6 @@ let check_domain = new Promise(function(result, rej){
             
             result(0);
         }
-        // console.log(dom_up[up]);
     },"json");
 });
 
@@ -117,17 +109,13 @@ let check_protocol = new Promise(function(result, rej){
 let check_links = new Promise(function(result,rej){
     let elems = document.getElementsByTagName('a');
     let count = 0;
-    // console.log(elems);
     for (let elem of elems){
         let b = elem.attributes;
-        // console.log(typeof(b['href'])) ; 
-        // console.log(typeof(b['class'])) ;
         if (b.length <= 3){
             if ((elems == '')){
                 if ((typeof b['style'] === 'undefined') || (typeof b['class'] === 'undefined')){
                     if (elem.href == window.location.href + '#'){
                         count++;
-                        // console.log(elem);
                     }
                 }
             }
@@ -186,7 +174,6 @@ let check_form = new Promise(function(result, rej){
         let pieces = document.domain.split('.');
         for (let j = 0; j < form.length; j++){
             for (let i=0; i < pieces.length-1; i++){
-                // console.log(typeof form[0].action);
                 if (typeof form[j].action == 'string'){
                     if (form[j].action.match(/([\w/]+\.){1,6}\w+/g) != null){
                         if (form[j].action.match(/([\w/]+\.){1,6}\w+/g)[0].search(pieces[i]) == -1){
@@ -271,7 +258,6 @@ let check_links_head = new Promise(function(result, rej){
     }else{
         result(-1);
     }
-    // result(count_links);
 });
 
 let job_new = async function(){
@@ -290,47 +276,33 @@ let job_new = async function(){
     if (mas_words[1]){
         count_ru = await checktypos('ru', mas_words[1]);
     }
-    // count_ru = await checktypos('index', ['браузера']);
+
 
     let count = ((mas_words[0].length + mas_words[1].length) != 0)?(count_en + count_ru)/(mas_words[0].length + mas_words[1].length):-1; 
     let res_form = await check_form;
     let res_other_links = await check_other_links;
     let res_links_head = await check_links_head;
 
-    // console.log(mas_words);
+
     let str = '';
     let last_arr = [res_domain, res_url, res_protocol, res_links, res_body, count, res_form, res_other_links, res_links_head, count_en + count_ru, mas_words[0].length + mas_words[1].length];
-    console.log(last_arr);
     var model = new NeuralNetwork();
     let li = window.browser.extension.getURL('src/model/model.json');
     load(li, function(err, mod){
         model.fromJSON(mod);
-        if (model.run(last_arr) > 0.5){
-            alert('Скорее всего сайт фишинговый')
+
+        let per = model.run(last_arr);
+        if (per > 0.5){
+            if (per < 0.7){
+                let text = 'С вероятностью более 50% этот сайт является фишиговым. Доверяете ли вы этому сайту?'
+                note(text);
+            }else{
+                let text = 'Очень большая вероятность того, что сайт является фишинговым. Будте осторожны и лучше закройте страницу.'
+                note(text);
+            }
         }
+            
     }, 'json');
-    // str += window.location.href;
-    // for(let ar of last_arr){
-    //     str+= '\t' + ar;
-    // }
-
-    
-    // var value = prompt("phishing?",1);
-    // console.log(value);
-    // if (value){
-    //     str+= '\t' + value;
-
-    //     if (confirm("Скачиваем?")){
-    //         document.write(
-    //             '<a href="data:text/plain;charset=utf-8,%EF%BB%BF' + encodeURIComponent(str) + `" download="text${+new Date()}.txt"><button type="button" id='pw'>Download</button></a>`
-    //         )
-    //     }
-    //     $(document).keypress(function (e) {
-    //         if (e.which == 13) {
-    //                 document.getElementById("pw").click();
-    //         }
-    //     });
-    // }
 
 };
 

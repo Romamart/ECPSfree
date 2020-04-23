@@ -17,10 +17,12 @@
     "content_scripts" : [
         {
             "matches" : ["<all_urls>"],
+            "css" : ["css/hotes.css"],
             "js" : [
-                    "my_brain.js",
-                    "dictionary.js",
-                    "index.js",
+                    "lib/my_brain.js",
+                    "lib/dictionary.js",
+                    "lib/index.js",
+                    "note.js",
                     "load.js",
                     "checktypos.js",
                     "appraiser.js"
