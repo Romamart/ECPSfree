@@ -106,24 +106,24 @@ let check_protocol = new Promise(function(result, rej){
     }
 });
 
-let check_links = new Promise(function(result,rej){
-    let elems = document.getElementsByTagName('a');
-    let count = 0;
-    for (let elem of elems){
-        let b = elem.attributes;
-        if (b.length <= 3){
-            if ((elems == '')){
-                if ((typeof b['style'] === 'undefined') || (typeof b['class'] === 'undefined')){
-                    if (elem.href == window.location.href + '#'){
-                        count++;
-                    }
-                }
-            }
-        }
-    }
+// let check_links = new Promise(function(result,rej){
+//     let elems = document.getElementsByTagName('a');
+//     let count = 0;
+//     for (let elem of elems){
+//         let b = elem.attributes;
+//         if (b.length <= 3){
+//             if ((elems == '')){
+//                 if ((typeof b['style'] === 'undefined') || (typeof b['class'] === 'undefined')){
+//                     if (elem.href == window.location.href + '#'){
+//                         count++;
+//                     }
+//                 }
+//             }
+//         }
+//     }
 
-    result(count);
-});
+//     result(count);
+// });
 
 let check_body = new Promise(function(result,rej){
     let flag = true;
@@ -265,7 +265,7 @@ let job_new = async function(){
     let res_url = await check_url;
     let res_domain = await check_domain;
     let res_protocol = await check_protocol;
-    let res_links = await check_links;
+    // let res_links = await check_links;
     let res_body = await check_body;
     let mas_words = await get_text;
     let count_en = 0;
@@ -283,9 +283,7 @@ let job_new = async function(){
     let res_other_links = await check_other_links;
     let res_links_head = await check_links_head;
 
-
-    let str = '';
-    let last_arr = [res_domain, res_url, res_protocol, res_links, res_body, count, res_form, res_other_links, res_links_head, count_en + count_ru, mas_words[0].length + mas_words[1].length];
+    let last_arr = [res_domain, res_url, res_protocol, res_body, count, res_form, res_other_links, res_links_head, count_en + count_ru, mas_words[0].length + mas_words[1].length];
     var model = new NeuralNetwork();
     let li = window.browser.extension.getURL('src/model/model.json');
     load(li, function(err, mod){
