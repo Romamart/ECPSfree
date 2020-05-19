@@ -53,25 +53,27 @@ let check_url = new Promise(function(result,rej){
     }
 
     win_url = dom;
-
+    let state = false;
     for(let x = 0; x < bounds.length; x++){
         if (win_url.length >= bounds[x][0] && win_url.length <= bounds[x][1]){
             mask += `${bounds[x][0]}-${bounds[x][1]}.json`;
+            state = true
         }
     }
 
     
     let web_url = window.browser.extension.getURL(mask);
-
-    load(web_url, function(err, urls){
-        var res;
-        if (urls.indexOf(win_url) != -1){
-            res = 1;
-        }else{
-            res = 0;
-        }
-        result(res);
-    }, 'json');
+    if (state){
+        load(web_url, function(err, urls){
+            var res;
+            if (urls.indexOf(win_url) != -1){
+                res = 1;
+            }else{
+                res = 0;
+            }
+            result(res);
+        }, 'json');
+    }else result(0)
 });
 
 
@@ -290,6 +292,7 @@ let job_new = async function(){
         model.fromJSON(mod);
 
         let per = model.run(last_arr);
+        console.log(per);
         if (per > 0.5){
             if (per < 0.7){
                 let text = 'С вероятностью более 50% этот сайт является фишиговым. Доверяете ли вы этому сайту?'
